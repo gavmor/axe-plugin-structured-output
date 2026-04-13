@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out plugin
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+
+      - name: Build plugin wasm
+        run: GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -o structured-output.wasm ./cmd/structured-output
+        env:
+          GOPRIVATE: github.com/gavmor/*
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: structured-output.wasm
+          generate_release_notes: true
